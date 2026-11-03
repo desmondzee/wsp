@@ -3,25 +3,25 @@
 > "No human is involved in writing this code because there are a lot of weights (typical networks might have millions), and coding directly in weights is kind of hard (I tried)."
 > — Andrej Karpathy, [Software 2.0](https://karpathy.medium.com/software-2-0-a64152b37c35) (2017)
 
-An agent reads a neural network's weights, works out what each part computes, and edits them directly to meet a goal, checking its work with a fixed budget of forward passes. No optimiser, no training loop. [Weight-space programming](https://rikiyat.github.io/blog/weight-space-programming/) (Takehi et al., 2026) in the style of [autoresearch](https://github.com/karpathy/autoresearch).
+Agents can read a neural network's weights, works out what each part computes, and edit them directly to meet a goal, checking its work with a fixed budget of forward passes without an optimiser. [Weight-space programming](https://rikiyat.github.io/blog/weight-space-programming/) (Takehi et al., 2026) in the style of [autoresearch](https://github.com/karpathy/autoresearch).
 
 ![progress](progress.png)
 
 ## Files
 
-- `harness.py` — loads the task, meters forward passes, scores edits, runs the held-out evaluation. Not modified.
-- `tools.py` — read and edit weights of any architecture. Not modified.
-- `edit.py` — the file the agent edits: starting weights in, edited weights out.
-- `program.md` — agent instructions. Edited by the human.
+- `harness.py` — loads the task, meters forward passes, scores edits and runs the held-out evaluation.
+- `tools.py` — read and edit weights of any architecture.
+- `edit.py` — file for agent to edit.
+- `program.md` — agent instructions to modify.
 
 ## Tasks
 
-Tasks live outside the repo. Point `WSP_TASK` at a directory with:
+Point `WSP_TASK` at a directory with:
 
 - `task.md` — the goal, what inputs and outputs mean, where the weights came from, what one forward pass returns, what must not break.
 - `task.py` — defines `BUDGET`, `REPEATS`, `SCORE_PASSES`, and `weights()`, `reference()` (optional), `model(w)`, `forward(model, **kw)`, `score(model)`, `heldout(model)`.
 
-`score` returns a dict with `score` (higher is better). The held-out evaluation must not share inputs with anything the agent can see. A task that needs extra packages lists them in `task.md`.
+`score` returns a dict with `score`. The held-out evaluation should not share inputs with anything the agent works with. Tasks that needs extra packages can list them in `task.md`.
 
 ## Quick start
 
@@ -30,11 +30,9 @@ Tasks live outside the repo. Point `WSP_TASK` at a directory with:
     uv run harness.py check
     uv run harness.py baseline
 
-Then point your agent at `program.md`:
+Then point your agent at `program.md`
 
-    Hi have a look at program.md and let's kick off a new run! let's do the setup first.
-
-`uv run harness.py heldout` is for the human, on checkpoints.
+`uv run harness.py heldout` for checkpoints
 
 ## Citation
 
