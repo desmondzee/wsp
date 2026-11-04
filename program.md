@@ -26,20 +26,23 @@ You change what the network does by reading its weights, working out what its pa
 - Modify `edit.py`. Anything in weight space is fair game: change values, add or remove directions, prune units, add new paths, rewrite layers.
 - Read and analyse the weights freely.
 - Run the network through `harness.run(w, capture=[...], ...)`, which returns the task's output and the activations of the named modules. This spends one forward pass from the task's budget.
+- Check an edit on the validation set with `uv run harness.py val`. You only see the number, never the inputs or outputs. This also spends passes.
 
 **What you CANNOT do:**
 - Set weights by minimising an error on data: no gradient steps, no regression or least-squares fits, no automated search over weights. You may measure activations and use what you learn to choose an edit, but the edit must come from your reasoning.
 - Run the network outside `harness.run`, including by re-implementing it.
-- Modify `harness.py`, `tools.py`, the task, or the ledger, or run the held-out evaluation.
+- Modify `harness.py`, `tools.py`, the task, or the ledger, read the validation or held-out inputs, or run the held-out evaluation.
 - Change tensor names or shapes.
 
 **The goal: the best task score without breaking what already works.** The task defines both.
 
 **Noise**: the baseline scores the starting weights several times to set a noise floor. Gains below it don't count.
 
+**Validation**: the score is what you study and tune against, so gains on it are partly specific to its inputs. Validation is the check: an edit only counts if it also improves val.
+
 **Simplicity criterion**: a smaller edit you can explain beats a larger one with the same score.
 
-**The first run**: understand the network before changing it, then record the baseline with `uv run harness.py baseline > run.log 2>&1`.
+**The first run**: understand the network before changing it, then record the baseline with `uv run harness.py baseline > run.log 2>&1` and its val with `uv run harness.py val`.
 
 ## Output format
 
@@ -61,15 +64,16 @@ The task may print more metrics above `noise`. Extract the key ones with `grep "
 Log every scored edit to `results.tsv` (tab-separated). Do not commit it.
 
 ```
-commit	score	fraction_changed	passes_used	status	description
+commit	score	val	fraction_changed	passes_used	status	description
 ```
 
 1. git commit hash (short, 7 chars)
 2. score (0.000000 for crashes)
-3. fraction of weights changed
-4. passes used so far
-5. status: `keep`, `discard`, or `crash`
-6. what the edit changes and why
+3. val, if you ran it (empty otherwise)
+4. fraction of weights changed
+5. passes used so far
+6. status: `keep`, `discard`, or `crash`
+7. what the edit changes and why
 
 ## The experiment loop
 
@@ -80,6 +84,6 @@ LOOP until the budget is spent:
 3. git commit
 4. Score it: `uv run harness.py score > run.log 2>&1`
 5. Record the result in the tsv.
-6. If the score beats the parent by more than the noise floor and nothing broke, keep the commit. Otherwise git reset.
+6. If the score beats the parent by more than the noise floor and nothing broke, run `uv run harness.py val`. Keep the commit only if val also beats the parent's val. Otherwise git reset.
 
 **Never stop and never wait**: once the loop has begun, don't pause to ask the human. If something hangs, kill it and move on. If you run out of ideas, re-read the weights.

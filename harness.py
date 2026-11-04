@@ -87,12 +87,12 @@ def run(w, capture=(), **kwargs):
     return (out, acts) if capture else out
 
 
-def _score(w, kind):
+def _score(w, kind, fn=None):
     passes = getattr(task, "SCORE_PASSES", 1)
     if used() + passes > BUDGET:
         raise SystemExit(f"forward-pass budget spent ({used()}/{BUDGET})")
     with torch.no_grad():
-        result = task.score(task.model(w))
+        result = (fn or task.score)(task.model(w))
     _record({"kind": kind, "passes": passes, "result": result})
     return result
 
@@ -134,6 +134,11 @@ def cmd_score():
     _print(_score(w, "score"), w)
 
 
+def cmd_val():
+    w = edited()
+    _print({"val": _score(w, "val", task.val)["score"]}, w)
+
+
 def cmd_heldout():
     w = edited()
     with torch.no_grad():
@@ -144,5 +149,5 @@ def cmd_heldout():
 
 if __name__ == "__main__":
     parser = argparse.ArgumentParser()
-    parser.add_argument("command", choices=["check", "baseline", "score", "heldout"])
-    {"check": cmd_check, "baseline": cmd_baseline, "score": cmd_score, "heldout": cmd_heldout}[parser.parse_args().command]()
+    parser.add_argument("command", choices=["check", "baseline", "score", "val", "heldout"])
+    {"check": cmd_check, "baseline": cmd_baseline, "score": cmd_score, "val": cmd_val, "heldout": cmd_heldout}[parser.parse_args().command]()

@@ -19,9 +19,9 @@ Agents can read a neural network's weights, works out what each part computes, a
 Point `WSP_TASK` at a directory with:
 
 - `task.md` — the goal, what inputs and outputs mean, where the weights came from, what one forward pass returns, what must not break.
-- `task.py` — defines `BUDGET`, `REPEATS`, `SCORE_PASSES`, and `weights()`, `reference()` (optional), `model(w)`, `forward(model, **kw)`, `score(model)`, `heldout(model)`.
+- `task.py` — defines `BUDGET`, `REPEATS`, `SCORE_PASSES`, and `weights()`, `reference()` (optional), `model(w)`, `forward(model, **kw)`, `score(model)`, `val(model)`, `heldout(model)`.
 
-`score` returns a dict with `score`. The held-out evaluation should not share inputs with anything the agent works with. Tasks that needs extra packages can list them in `task.md`.
+`score` and `val` return a dict with `score`. `val` is a separate set the agent sees only as a number. Score, val and held-out should not share inputs. Tasks that needs extra packages can list them in `task.md`.
 
 ## Quick start
 
