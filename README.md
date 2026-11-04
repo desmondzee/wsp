@@ -7,6 +7,12 @@ Agents can read a neural network's weights, work out what each part computes, an
 
 ![progress](progress.png)
 
+*Instruction following (IFEval) on Qwen2.5-0.5B-Instruct: held-out 0.351 → 0.406.*
+
+![chess and go](progress-chessgo.png)
+
+*One network written from zero weights to play both chess and 9×9 Go: held-out win rate 0.244 → 0.980.*
+
 ## Files
 
 - `harness.py` — loads the task, meters forward passes, scores edits and runs the held-out evaluation.
